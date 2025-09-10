@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>พยากรณ์อากาศไทย – เข้าถึงได้ด้วย Screen Reader</title>
+  <meta name="description" content="หน้าเว็บพยากรณ์อากาศประเทศไทย ออกแบบตามแนวทางการเข้าถึงได้ (Accessible) รองรับผู้อ่านหน้าจอและคีย์บอร์ด" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a href="#main" class="sr-only" id="skip">ข้ามไปยังเนื้อหา (Skip to content)</a>
+  <header class="wrap" role="banner">
+    <h1>พยากรณ์อากาศประเทศไทย (Accessible)</h1>
+    <p class="muted">หน้าเว็บนี้ออกแบบตามหลักการเข้าถึงได้: ใช้โครงสร้างเชิงความหมาย (semantic HTML), รองรับคีย์บอร์ด, มี <em>live region</em> แจ้งสถานะ และตารางที่ระบุ <code>scope</code>/<code>caption</code> ชัดเจน</p>
+  </header>
+
+  <main id="main" class="wrap grid grid-2" role="main">
+    <section aria-labelledby="search-title" class="card">
+      <h2 id="search-title">ค้นหาพื้นที่</h2>
+      <p id="search-help" class="muted">พิมพ์ชื่ออำเภอ/จังหวัด (เช่น “บางใหญ่”, “เชียงใหม่”), หรือกดปุ่มเมืองยอดนิยมด้านล่าง</p>
+      <form id="search-form" aria-describedby="search-help" class="grid" autocomplete="off">
+        <div>
+          <label for="q">ค้นหาพื้นที่</label>
+          <input id="q" name="q" type="text" placeholder="เช่น บางใหญ่ หรือ Nonthaburi" aria-describedby="search-help" inputmode="search" />
+        </div>
+        <div class="toolbar" aria-label="การตั้งค่าการแสดงผล">
+          <div class="switch" role="group" aria-label="หน่วยอุณหภูมิ">
+            <span class="pill" id="unit-label">หน่วย:</span>
+            <button type="button" class="btn" id="btnC" aria-pressed="true" aria-describedby="unit-label">°C</button>
+            <button type="button" class="btn" id="btnF" aria-pressed="false" aria-describedby="unit-label">°F</button>
+          </div>
+          <button class="btn primary" id="btnSearch">ค้นหา</button>
+        </div>
+      </form>
+
+      <div class="row" role="group" aria-label="เมืองยอดนิยมในไทย">
+        <button class="chip" data-city="Bangkok" data-lat="13.7563" data-lon="100.5018">กรุงเทพฯ</button>
+        <button class="chip" data-city="Nonthaburi" data-lat="13.862" data-lon="100.514">นนทบุรี</button>
+        <button class="chip" data-city="Pathum Thani" data-lat="14.020" data-lon="100.525">ปทุมธานี</button>
+        <button class="chip" data-city="Chiang Mai" data-lat="18.7883" data-lon="98.9853">เชียงใหม่</button>
+        <button class="chip" data-city="Phuket" data-lat="7.8804" data-lon="98.3923">ภูเก็ต</button>
+        <button class="chip" data-city="Khon Kaen" data-lat="16.4419" data-lon="102.8350">ขอนแก่น</button>
+        <button class="chip" data-city="Hat Yai" data-lat="7.0083" data-lon="100.4767">หาดใหญ่</button>
+      </div>
+
+      <div id="live" class="status" role="status" aria-live="polite" aria-atomic="true" style="margin-top:1rem;">พร้อมค้นหาอากาศในพื้นที่ของคุณ</div>
+      <div id="error" class="status error" role="alert" style="display:none; margin-top:.75rem;">เกิดข้อผิดพลาดในการดึงข้อมูล</div>
+    </section>
+
+    <section aria-labelledby="result-title" class="card">
+      <h2 id="result-title">ผลลัพธ์พยากรณ์</h2>
+      <p id="place" class="muted">ยังไม่ได้เลือกพื้นที่</p>
+
+      <div class="grid">
+        <div>
+          <h3>สภาพอากาศขณะนี้</h3>
+          <p id="current" class="muted">—</p>
+        </div>
+        <div>
+          <h3>รายละเอียด</h3>
+          <ul id="details" class="muted" aria-label="รายละเอียดเพิ่มเติม"></ul>
+        </div>
+      </div>
+
+      <div>
+        <h3 id="hourly-title">รายชั่วโมง</h3>
+        <div class="card" style="margin:.5rem 0; background: transparent; border:1px solid #334155;">
+          <fieldset>
+            <legend>ช่วงเวลาแสดงผล</legend>
+            <div class="toolbar" role="group" aria-label="ตั้งค่าช่วงเวลา">
+              <label for="windowHours" class="pill">ความยาวช่วงเวลา</label>
+              <select id="windowHours" aria-describedby="hourly-desc">
+                <option value="6">ถัดไป 6 ชั่วโมง</option>
+                <option value="12" selected>ถัดไป 12 ชั่วโมง</option>
+                <option value="24">ถัดไป 24 ชั่วโมง</option>
+              </select>
+
+              <label class="pill" for="customToggle">ใช้เวลาเริ่มกำหนดเอง</label>
+              <input type="checkbox" id="customToggle" aria-controls="customStartWrap" aria-expanded="false" />
+
+              <span id="customStartWrap" class="row" hidden>
+                <label for="startAt" class="pill">เริ่มที่</label>
+                <input id="startAt" type="datetime-local" />
+              </span>
+
+              <button id="applyWindow" class="btn">ปรับช่วงเวลา</button>
+            </div>
+            <p class="muted" id="windowHelp">ค่าเริ่มต้นจะแสดงจากเวลาปัจจุบันไปตามความยาวที่เลือก (เช่น 12 ชั่วโมง)</p>
+          </fieldset>
+        </div>
+
+        <div class="sr-only" id="hourly-desc">ตารางนี้แสดงเวลา อุณหภูมิ ความชื้น และโอกาสเกิดฝนในแต่ละชั่วโมง</div>
+        <table aria-labelledby="hourly-title" aria-describedby="hourly-desc">
+          <caption>ตารางพยากรณ์รายชั่วโมง</caption>
+          <thead>
+            <tr>
+              <th scope="col">เวลา</th>
+              <th scope="col">อุณหภูมิ</th>
+              <th scope="col">ความชื้น</th>
+              <th scope="col">โอกาสฝน</th>
+            </tr>
+          </thead>
+          <tbody id="hourly-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap" role="contentinfo">
+    ข้อมูลเรียลไทม์จาก <strong>Open‑Meteo</strong> (ไม่มี API key) • เคารพการตั้งค่า <em>Reduced Motion</em> และ <em>Color Scheme</em> ของระบบ • ออกแบบให้ใช้งานได้ด้วยคีย์บอร์ดและผู้อ่านหน้าจอ
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
